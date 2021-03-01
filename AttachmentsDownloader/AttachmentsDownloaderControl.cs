@@ -278,5 +278,11 @@ namespace XrmToolBox.AttachmentsDownloader
             linkLabel1.LinkVisited = true;
             System.Diagnostics.Process.Start("https://www.linkedin.com/in/dynamics365blocks/");
         }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            linkLabel1.LinkVisited = true;
+            System.Diagnostics.Process.Start("https://github.com/vgrade/XrmToolBoxAttachmentDownloader");
+        }
     }
 }

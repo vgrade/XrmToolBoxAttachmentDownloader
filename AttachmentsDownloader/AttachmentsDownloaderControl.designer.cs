@@ -38,6 +38,8 @@ namespace XrmToolBox.AttachmentsDownloader
             this.BrowseBtn = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.outputpath = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.label7 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
@@ -57,8 +59,6 @@ namespace XrmToolBox.AttachmentsDownloader
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.label1 = new System.Windows.Forms.Label();
-            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.toolStripMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
@@ -172,6 +172,28 @@ namespace XrmToolBox.AttachmentsDownloader
             this.outputpath.Name = "outputpath";
             this.outputpath.Size = new System.Drawing.Size(425, 22);
             this.outputpath.TabIndex = 51;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(255, 88);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(90, 17);
+            this.label1.TabIndex = 61;
+            this.label1.Text = "Source Code";
+            // 
+            // linkLabel2
+            // 
+            this.linkLabel2.AutoSize = true;
+            this.linkLabel2.Location = new System.Drawing.Point(355, 88);
+            this.linkLabel2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.linkLabel2.Name = "linkLabel2";
+            this.linkLabel2.Size = new System.Drawing.Size(26, 17);
+            this.linkLabel2.TabIndex = 60;
+            this.linkLabel2.TabStop = true;
+            this.linkLabel2.Text = "Git";
+            this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel2_LinkClicked);
             // 
             // label7
             // 
@@ -346,27 +368,6 @@ namespace XrmToolBox.AttachmentsDownloader
             // 
             this.columnHeader7.Text = "Message";
             this.columnHeader7.Width = 160;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(255, 88);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(90, 17);
-            this.label1.TabIndex = 61;
-            this.label1.Text = "Source Code";
-            // 
-            // linkLabel2
-            // 
-            this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(355, 88);
-            this.linkLabel2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.linkLabel2.Name = "linkLabel2";
-            this.linkLabel2.Size = new System.Drawing.Size(26, 17);
-            this.linkLabel2.TabIndex = 60;
-            this.linkLabel2.TabStop = true;
-            this.linkLabel2.Text = "Git";
             // 
             // MyPluginControl
             // 

@@ -21,7 +21,7 @@ namespace XrmToolBox.AttachmentsDownloader
         ExportMetadata("BackgroundColor", "Purple"),
         ExportMetadata("PrimaryFontColor", "White"),
         ExportMetadata("SecondaryFontColor", "White")]
-    public class MyPlugin : PluginBase
+    public class AttachmentsDownloader : PluginBase
     {
         public override IXrmToolBoxPluginControl GetControl()
         {
@@ -31,7 +31,7 @@ namespace XrmToolBox.AttachmentsDownloader
         /// <summary>
         /// Constructor 
         /// </summary>
-        public MyPlugin()
+        public AttachmentsDownloader()
         {
             // If you have external assemblies that you need to load, uncomment the following to 
             // hook into the event that will fire when an Assembly fails to resolve

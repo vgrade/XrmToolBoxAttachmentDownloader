@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AttachmentsDownloader</RootNamespace>
-    <AssemblyName>AttachmentsDownloader</AssemblyName>
+    <AssemblyName>XrmToolBox.AttachmentDownloader</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -157,7 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttachmentHelper.cs" />
-    <Compile Include="MyPlugin.cs" />
+    <Compile Include="AttachmentDownloader.cs" />
     <Compile Include="AttachmentsDownloaderControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

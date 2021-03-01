@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("XrmToolBox.AttachmentsDownloader")]
+[assembly: AssemblyTitle("XrmToolBox.AttachmentDownloader")]
 [assembly: AssemblyDescription("Downlaod the attachments related to any entity in Dynamics 365 CRM. Use fetch xml to filter out records.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Vishal Grade")]
-[assembly: AssemblyProduct("Attachments Downloader")]
+[assembly: AssemblyProduct("Attachment Downloader")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("VGrade")]
 [assembly: AssemblyCulture("")]

@@ -19,7 +19,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 
 namespace XrmToolBox.AttachmentsDownloader
 {
- public   class AttachmentHelper
+    public class AttachmentHelper
     {
 
         public static string _PrimaryIdAttribute;
@@ -46,7 +46,7 @@ namespace XrmToolBox.AttachmentsDownloader
                 _linkEntity.LinkEntities.Add(a);
             }
             _linkEntity.LinkFromAttributeName = "objectid";
-            GetPrimaryIdAttribute(Service, queryExpression.EntityName,out _PrimaryIdAttribute,out _PrimaryNameAttribute);
+            GetPrimaryIdAttribute(Service, queryExpression.EntityName, out _PrimaryIdAttribute, out _PrimaryNameAttribute);
             _linkEntity.LinkToAttributeName = _PrimaryIdAttribute;
 
             _linkEntity.LinkToEntityName = queryExpression.EntityName;
@@ -65,6 +65,75 @@ namespace XrmToolBox.AttachmentsDownloader
             qe.LinkEntities[0].EntityAlias = "Regarding";
             qe.ColumnSet = new ColumnSet(true);
             return qe;
+
+        }
+
+        public static int GetToalRecordsCount(IOrganizationService Service, string _fetchXml)
+        {
+            int result = 0;
+            var conversionRequest = new FetchXmlToQueryExpressionRequest
+            {
+                FetchXml = _fetchXml
+            };
+            var conversionResponse =
+                (FetchXmlToQueryExpressionResponse)Service.Execute(conversionRequest);
+            QueryExpression queryExpression = conversionResponse.Query;
+
+            QueryExpression qe = new QueryExpression("annotation");
+
+            LinkEntity _linkEntity = new LinkEntity();
+            _linkEntity.JoinOperator = JoinOperator.Inner;
+            _linkEntity.LinkCriteria = queryExpression.Criteria;
+            foreach (var a in queryExpression.LinkEntities)
+            {
+                _linkEntity.LinkEntities.Add(a);
+            }
+            _linkEntity.LinkFromAttributeName = "objectid";
+            GetPrimaryIdAttribute(Service, queryExpression.EntityName, out _PrimaryIdAttribute, out _PrimaryNameAttribute);
+            _linkEntity.LinkToAttributeName = _PrimaryIdAttribute;
+
+            _linkEntity.LinkToEntityName = queryExpression.EntityName;
+            qe.LinkEntities.Add(_linkEntity);
+
+            List<string> _columns = new List<string>();
+            foreach (var a in queryExpression.ColumnSet.Columns)
+            {
+                _columns.Add(a);
+            }
+            if (!_columns.Contains(_PrimaryNameAttribute))
+            {
+                _columns.Add(_PrimaryNameAttribute);
+            }
+            qe.LinkEntities[0].Columns.AddColumns(_columns.ToArray());
+            qe.LinkEntities[0].EntityAlias = "Regarding";
+            qe.ColumnSet = new ColumnSet(false);
+
+            int queryCount = 5000;
+            int pageNumber = 1;
+
+            qe.PageInfo = new PagingInfo();
+            qe.PageInfo.Count = queryCount;
+            qe.PageInfo.PageNumber = pageNumber;
+            qe.PageInfo.PagingCookie = null;
+            qe.PageInfo.ReturnTotalRecordCount = true;
+
+            while (true)
+            {
+                EntityCollection enColl = Service.RetrieveMultiple(queryExpression);
+
+                result += enColl.Entities.Count;
+                if (enColl.MoreRecords)
+                {
+                    queryExpression.PageInfo.PageNumber = ++pageNumber;
+                    queryExpression.PageInfo.PagingCookie = enColl.PagingCookie;
+                    queryExpression.PageInfo.ReturnTotalRecordCount = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return result;
 
         }
 

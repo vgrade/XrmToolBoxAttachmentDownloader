@@ -30,8 +30,7 @@ namespace XrmToolBox.AttachmentsDownloader
 
         private void MyPluginControl_Load(object sender, EventArgs e)
         {
-            ShowInfoNotification("This is a notification that can lead to XrmToolBox repository", new Uri("https://github.com/MscrmTools/XrmToolBox"));
-
+           
             // Loads or creates the settings for the plugin
             if (!SettingsManager.Instance.TryLoad(GetType(), out mySettings))
             {
@@ -114,96 +113,103 @@ namespace XrmToolBox.AttachmentsDownloader
                     int queryCount = 5000;
                     int pageNumber = 1;
 
-
-                    QueryExpression queryExpression = AttachmentHelper.GetQueryExpression(Service, _fetchXml);
-                    queryExpression.PageInfo = new PagingInfo();
-                    queryExpression.PageInfo.Count = queryCount;
-                    queryExpression.PageInfo.PageNumber = pageNumber;
-                    queryExpression.PageInfo.PagingCookie = null;
-                    queryExpression.PageInfo.ReturnTotalRecordCount = true;
-
-
-                    DataTable dt = new DataTable();
-                    dt.Columns.Add("Row Id");
-                    dt.Columns.Add("Record Name");
-                    dt.Columns.Add("Record Guid");
-                    dt.Columns.Add("Notes Record Guid");
-                    dt.Columns.Add("File Name");
-                    dt.Columns.Add("Status");
-                    dt.Columns.Add("Message");
-                    while (true)
+                    int totalRecords = AttachmentHelper.GetToalRecordsCount(Service, _fetchXml);
+                    string message = $"Total notes records found : {totalRecords}. Do you want to proceed to download?";
+                    string title = "Total records Notification";
+                    MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+                    DialogResult result = MessageBox.Show(message, title, buttons);
+                    if (result == DialogResult.Yes)
                     {
-                        EntityCollection enColl = Service.RetrieveMultiple(queryExpression);
-                        recordCount += enColl.Entities.Count;
-                        if (recordCount == 0)
+                        QueryExpression queryExpression = AttachmentHelper.GetQueryExpression(Service, _fetchXml);
+                        queryExpression.PageInfo = new PagingInfo();
+                        queryExpression.PageInfo.Count = queryCount;
+                        queryExpression.PageInfo.PageNumber = pageNumber;
+                        queryExpression.PageInfo.PagingCookie = null;
+                        queryExpression.PageInfo.ReturnTotalRecordCount = true;
+
+
+                        DataTable dt = new DataTable();
+                        dt.Columns.Add("Row Id");
+                        dt.Columns.Add("Record Name");
+                        dt.Columns.Add("Record Guid");
+                        dt.Columns.Add("Notes Record Guid");
+                        dt.Columns.Add("File Name");
+                        dt.Columns.Add("Status");
+                        dt.Columns.Add("Message");
+                        while (true)
                         {
-                            MessageBox.Show("No notes record found against fetch xml's record.");
-                            break;
-                        }
-                        if (enColl.Entities != null)
-                        {
-                            foreach (Entity annotationRec in enColl.Entities)
+                            EntityCollection enColl = Service.RetrieveMultiple(queryExpression);
+                            recordCount += enColl.Entities.Count;
+                            if (recordCount == 0)
                             {
-                                ListViewItem lvItem = new ListViewItem((++_loopCounter).ToString());
-
-                                try
+                                MessageBox.Show("No notes record found against fetch xml's records.");
+                                break;
+                            }
+                            if (enColl.Entities != null)
+                            {
+                                foreach (Entity annotationRec in enColl.Entities)
                                 {
-                                    if (annotationRec.Contains("filename"))
+                                    ListViewItem lvItem = new ListViewItem((++_loopCounter).ToString());
+
+                                    try
                                     {
-                                        String filename = annotationRec.GetAttributeValue<String>("filename");
-                                        String noteBody = annotationRec.GetAttributeValue<String>("documentbody");
-                                        string outputFileName = @"" + _outputPath + "\\" + filename;
-
-                                        lvItem.SubItems.Add(annotationRec.GetAttributeValue<AliasedValue>("Regarding." + AttachmentHelper._PrimaryNameAttribute).Value.ToString());
-                                        lvItem.SubItems.Add(annotationRec.GetAttributeValue<EntityReference>("objectid").Id.ToString());
-                                        lvItem.SubItems.Add(annotationRec.Id.ToString());
-                                        lvItem.SubItems.Add(filename);
-
-                                        if (!string.IsNullOrEmpty(noteBody))
+                                        if (annotationRec.Contains("filename"))
                                         {
-                                            try
+                                            String filename = annotationRec.GetAttributeValue<String>("filename");
+                                            String noteBody = annotationRec.GetAttributeValue<String>("documentbody");
+                                            string outputFileName = @"" + _outputPath + "\\" + filename;
+
+                                            lvItem.SubItems.Add(annotationRec.GetAttributeValue<AliasedValue>("Regarding." + AttachmentHelper._PrimaryNameAttribute).Value.ToString());
+                                            lvItem.SubItems.Add(annotationRec.GetAttributeValue<EntityReference>("objectid").Id.ToString());
+                                            lvItem.SubItems.Add(annotationRec.Id.ToString());
+                                            lvItem.SubItems.Add(filename);
+
+                                            if (!string.IsNullOrEmpty(noteBody))
                                             {
-                                                byte[] fileContent = Convert.FromBase64String(noteBody);
-                                                System.IO.File.WriteAllBytes(outputFileName, fileContent);
-                                                lvItem.SubItems.Add("Downloaded");
-                                                lvItem.SubItems.Add(string.Empty);
+                                                try
+                                                {
+                                                    byte[] fileContent = Convert.FromBase64String(noteBody);
+                                                    System.IO.File.WriteAllBytes(outputFileName, fileContent);
+                                                    lvItem.SubItems.Add("Downloaded");
+                                                    lvItem.SubItems.Add(string.Empty);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    lvItem.SubItems.Add("Failed");
+                                                    lvItem.SubItems.Add($"Failed in converting file to base 64 or writing file to output location. Exception: {ex.Message}");
+                                                }
                                             }
-                                            catch (Exception ex)
+                                            else
                                             {
                                                 lvItem.SubItems.Add("Failed");
-                                                lvItem.SubItems.Add($"Failed in converting file to base 64 or writing file to output location. Exception: {ex.Message}");
+                                                lvItem.SubItems.Add("Notes body is empty");
                                             }
                                         }
-                                        else
-                                        {
-                                            lvItem.SubItems.Add("Failed");
-                                            lvItem.SubItems.Add("Notes body is empty");
-                                        }
                                     }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show("Error in downloading attachments. Exception: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        break;
+                                    }
+                                    worker.ReportProgress(0, lvItem);
+                                    worker.ReportProgress(1);
                                 }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show("Error in downloading attachments. Exception: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    break;
-                                }
-                                worker.ReportProgress(0, lvItem);
-                                worker.ReportProgress(1);
                             }
-                        }
-                        if (enColl.MoreRecords)
-                        {
-                            queryExpression.PageInfo.PageNumber = ++pageNumber;
-                            queryExpression.PageInfo.PagingCookie = enColl.PagingCookie;
-                            queryExpression.PageInfo.ReturnTotalRecordCount = true;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                            if (enColl.MoreRecords)
+                            {
+                                queryExpression.PageInfo.PageNumber = ++pageNumber;
+                                queryExpression.PageInfo.PagingCookie = enColl.PagingCookie;
+                                queryExpression.PageInfo.ReturnTotalRecordCount = true;
+                            }
+                            else
+                            {
+                                break;
+                            }
 
+                        }
+                        lb_totalfilescount.Text = recordCount.ToString();
+                        args.Result = null;
                     }
-                    lb_totalfilescount.Text = recordCount.ToString();
-                    args.Result = null;
 
                 },
                 PostWorkCallBack = (args) =>
@@ -269,7 +275,7 @@ namespace XrmToolBox.AttachmentsDownloader
 
         private void linkLabel7_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-           linkLabel1.LinkVisited = true;
+            linkLabel1.LinkVisited = true;
             System.Diagnostics.Process.Start("https://vishalgrade.com/");
         }
 

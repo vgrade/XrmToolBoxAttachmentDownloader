@@ -119,14 +119,14 @@ namespace XrmToolBox.AttachmentsDownloader
 
             while (true)
             {
-                EntityCollection enColl = Service.RetrieveMultiple(queryExpression);
+                EntityCollection enColl = Service.RetrieveMultiple(qe);
 
                 result += enColl.Entities.Count;
                 if (enColl.MoreRecords)
                 {
-                    queryExpression.PageInfo.PageNumber = ++pageNumber;
-                    queryExpression.PageInfo.PagingCookie = enColl.PagingCookie;
-                    queryExpression.PageInfo.ReturnTotalRecordCount = true;
+                    qe.PageInfo.PageNumber = ++pageNumber;
+                    qe.PageInfo.PagingCookie = enColl.PagingCookie;
+                    qe.PageInfo.ReturnTotalRecordCount = true;
                 }
                 else
                 {

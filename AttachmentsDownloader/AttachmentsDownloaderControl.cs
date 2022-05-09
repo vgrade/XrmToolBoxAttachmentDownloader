@@ -136,6 +136,9 @@ namespace XrmToolBox.AttachmentsDownloader
                         dt.Columns.Add("File Name");
                         dt.Columns.Add("Status");
                         dt.Columns.Add("Message");
+
+                        var dict = new Dictionary<string, int>();
+
                         while (true)
                         {
                             EntityCollection enColl = Service.RetrieveMultiple(queryExpression);
@@ -156,6 +159,28 @@ namespace XrmToolBox.AttachmentsDownloader
                                         if (annotationRec.Contains("filename"))
                                         {
                                             String filename = annotationRec.GetAttributeValue<String>("filename");
+
+                                            if (dict.ContainsKey(filename))
+                                            {
+                                                int num = dict[filename] + 1;
+                                                dict[filename] = num;
+
+                                                string versionText = " (" + num + ")";
+                                                if (filename.LastIndexOf('.') != -1)
+                                                {
+                                                    int position = filename.LastIndexOf('.');
+                                                    filename = filename.Insert(position, versionText);
+                                                }
+                                                else
+                                                {
+                                                 filename += versionText;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                dict.Add(filename, 1);
+                                            }
+
                                             String noteBody = annotationRec.GetAttributeValue<String>("documentbody");
                                             string outputFileName = @"" + _outputPath + "\\" + filename;
 

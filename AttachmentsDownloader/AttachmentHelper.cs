@@ -26,6 +26,58 @@ namespace XrmToolBox.AttachmentsDownloader
 
         public static string _PrimaryNameAttribute;
 
+        public static bool IsActivityEntity(IOrganizationService service, string entityLogicalName)
+        {
+            // Retrieve entity metadata
+            RetrieveEntityRequest request = new RetrieveEntityRequest
+            {
+                LogicalName = entityLogicalName,
+                EntityFilters = EntityFilters.Entity
+            };
+
+            RetrieveEntityResponse response = (RetrieveEntityResponse)service.Execute(request);
+            EntityMetadata entityMetadata = response.EntityMetadata;
+
+            // Check if the entity is an activity entity
+            return entityMetadata.IsActivity.HasValue && entityMetadata.IsActivity.Value;
+        }
+
+        public static int GetToalRecordsCount(IOrganizationService Service, string _fetchXml)
+        {
+
+            QueryExpression qe = GetQueryExpression(Service, _fetchXml);
+
+            int result = 0;
+
+            int queryCount = 5000;
+            int pageNumber = 1;
+
+            qe.PageInfo = new PagingInfo();
+            qe.PageInfo.Count = queryCount;
+            qe.PageInfo.PageNumber = pageNumber;
+            qe.PageInfo.PagingCookie = null;
+            qe.PageInfo.ReturnTotalRecordCount = true;
+
+            while (true)
+            {
+                EntityCollection enColl = Service.RetrieveMultiple(qe);
+
+                result += enColl.Entities.Count;
+                if (enColl.MoreRecords)
+                {
+                    qe.PageInfo.PageNumber = ++pageNumber;
+                    qe.PageInfo.PagingCookie = enColl.PagingCookie;
+                    qe.PageInfo.ReturnTotalRecordCount = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return result;
+
+        }
+
         public static QueryExpression GetQueryExpression(IOrganizationService Service, string _fetchXml)
         {
             var conversionRequest = new FetchXmlToQueryExpressionRequest
@@ -36,7 +88,12 @@ namespace XrmToolBox.AttachmentsDownloader
                 (FetchXmlToQueryExpressionResponse)Service.Execute(conversionRequest);
             QueryExpression queryExpression = conversionResponse.Query;
 
-            QueryExpression qe = new QueryExpression("annotation");
+            var isActivityEntity = IsActivityEntity(Service, queryExpression.EntityName);
+
+            //Download attachments from actitiy table and notes for rest of the tables
+            var tableName = isActivityEntity ? "activitymimeattachment" : "annotation";
+
+            QueryExpression qe = new QueryExpression(tableName);
 
             LinkEntity _linkEntity = new LinkEntity();
             _linkEntity.JoinOperator = JoinOperator.Inner;
@@ -68,75 +125,6 @@ namespace XrmToolBox.AttachmentsDownloader
 
         }
 
-        public static int GetToalRecordsCount(IOrganizationService Service, string _fetchXml)
-        {
-            int result = 0;
-            var conversionRequest = new FetchXmlToQueryExpressionRequest
-            {
-                FetchXml = _fetchXml
-            };
-            var conversionResponse =
-                (FetchXmlToQueryExpressionResponse)Service.Execute(conversionRequest);
-            QueryExpression queryExpression = conversionResponse.Query;
-
-            QueryExpression qe = new QueryExpression("annotation");
-
-            LinkEntity _linkEntity = new LinkEntity();
-            _linkEntity.JoinOperator = JoinOperator.Inner;
-            _linkEntity.LinkCriteria = queryExpression.Criteria;
-            foreach (var a in queryExpression.LinkEntities)
-            {
-                _linkEntity.LinkEntities.Add(a);
-            }
-            _linkEntity.LinkFromAttributeName = "objectid";
-            GetPrimaryIdAttribute(Service, queryExpression.EntityName, out _PrimaryIdAttribute, out _PrimaryNameAttribute);
-            _linkEntity.LinkToAttributeName = _PrimaryIdAttribute;
-
-            _linkEntity.LinkToEntityName = queryExpression.EntityName;
-            qe.LinkEntities.Add(_linkEntity);
-
-            List<string> _columns = new List<string>();
-            foreach (var a in queryExpression.ColumnSet.Columns)
-            {
-                _columns.Add(a);
-            }
-            if (!_columns.Contains(_PrimaryNameAttribute))
-            {
-                _columns.Add(_PrimaryNameAttribute);
-            }
-            qe.LinkEntities[0].Columns.AddColumns(_columns.ToArray());
-            qe.LinkEntities[0].EntityAlias = "Regarding";
-            qe.ColumnSet = new ColumnSet(false);
-
-            int queryCount = 5000;
-            int pageNumber = 1;
-
-            qe.PageInfo = new PagingInfo();
-            qe.PageInfo.Count = queryCount;
-            qe.PageInfo.PageNumber = pageNumber;
-            qe.PageInfo.PagingCookie = null;
-            qe.PageInfo.ReturnTotalRecordCount = true;
-
-            while (true)
-            {
-                EntityCollection enColl = Service.RetrieveMultiple(qe);
-
-                result += enColl.Entities.Count;
-                if (enColl.MoreRecords)
-                {
-                    qe.PageInfo.PageNumber = ++pageNumber;
-                    qe.PageInfo.PagingCookie = enColl.PagingCookie;
-                    qe.PageInfo.ReturnTotalRecordCount = true;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            return result;
-
-        }
-
         public static void GetPrimaryIdAttribute(IOrganizationService service, String LogicalName, out string PrimaryIdAttribute, out string PrimaryNameAttribute)
         {
             RetrieveEntityRequest retrieveEntityRequest = new RetrieveEntityRequest
@@ -149,5 +137,6 @@ namespace XrmToolBox.AttachmentsDownloader
             PrimaryIdAttribute = AccountEntity.PrimaryIdAttribute;
             PrimaryNameAttribute = AccountEntity.PrimaryNameAttribute;
         }
+
     }
 }

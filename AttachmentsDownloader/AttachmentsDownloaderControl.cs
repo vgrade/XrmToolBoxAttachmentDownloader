@@ -181,7 +181,15 @@ namespace XrmToolBox.AttachmentsDownloader
                                                 dict.Add(filename, 1);
                                             }
 
-                                            String noteBody = annotationRec.GetAttributeValue<String>("documentbody");
+                                            String noteBody = string.Empty;
+                                            if (annotationRec.Contains("documentbody"))//for annotation
+                                            {
+                                                noteBody = annotationRec.GetAttributeValue<String>("documentbody");
+                                            }
+                                            else if (annotationRec.Contains("body"))//for attachments-activitymimeattachment
+                                            {
+                                                noteBody = annotationRec.GetAttributeValue<String>("body");
+                                            }
                                             string outputFileName = @"" + _outputPath + "\\" + filename;
 
                                             lvItem.SubItems.Add(annotationRec.GetAttributeValue<AliasedValue>("Regarding." + AttachmentHelper._PrimaryNameAttribute).Value.ToString());
